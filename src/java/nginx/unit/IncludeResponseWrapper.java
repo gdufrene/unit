@@ -1,14 +1,15 @@
 package nginx.unit;
 
 import java.io.IOException;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponseWrapper;
+
+
 
 public class IncludeResponseWrapper extends HttpServletResponseWrapper {
     private static final Charset UTF_8 = StandardCharsets.UTF_8;
@@ -70,13 +71,6 @@ public class IncludeResponseWrapper extends HttpServletResponseWrapper {
     public void setStatus(int sc)
     {
         trace("setStatus: " + sc);
-    }
-
-    @Override
-    @Deprecated
-    public void setStatus(int sc, String sm)
-    {
-        trace("setStatus: " + sc + "; " + sm);
     }
 
     @Override

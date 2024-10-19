@@ -1,9 +1,11 @@
 package nginx.unit;
 
-import javax.servlet.descriptor.TaglibDescriptor;
+
 
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import jakarta.servlet.descriptor.TaglibDescriptor;
 
 public class Taglib implements TaglibDescriptor
 {

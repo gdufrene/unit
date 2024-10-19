@@ -1,18 +1,17 @@
 package nginx.unit;
 
 import java.io.Serializable;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
-
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionAttributeListener;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
 
 /**
  * @author Andrey Kazankov
@@ -79,13 +78,6 @@ public class Session implements HttpSession, Serializable
         return max_inactive_interval;
     }
 
-    @Deprecated
-    @Override
-    public javax.servlet.http.HttpSessionContext getSessionContext()
-    {
-        return null;
-    }
-
     @Override
     public Object getAttribute(String s)
     {
@@ -94,27 +86,11 @@ public class Session implements HttpSession, Serializable
         }
     }
 
-    @Deprecated
-    @Override
-    public Object getValue(String s)
-    {
-        return getAttribute(s);
-    }
-
     @Override
     public Enumeration<String> getAttributeNames()
     {
         synchronized (attributes) {
             return Collections.enumeration(attributes.keySet());
-        }
-    }
-
-    @Deprecated
-    @Override
-    public String[] getValueNames()
-    {
-        synchronized (attributes) {
-            return attributes.keySet().toArray(new String[attributes.keySet().size()]);
         }
     }
 
@@ -167,13 +143,6 @@ public class Session implements HttpSession, Serializable
         }
     }
 
-    @Deprecated
-    @Override
-    public void putValue(String s, Object o)
-    {
-        setAttribute(s,o);
-    }
-
     @Override
     public void removeAttribute(String s)
     {
@@ -196,13 +165,6 @@ public class Session implements HttpSession, Serializable
 
         HttpSessionBindingEvent e = new HttpSessionBindingEvent(this, s, o);
         attr_listener.attributeRemoved(e);
-    }
-
-    @Deprecated
-    @Override
-    public void removeValue(String s)
-    {
-        removeAttribute(s);
     }
 
     @Override

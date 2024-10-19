@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.servlet.descriptor.JspPropertyGroupDescriptor;
-
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import jakarta.servlet.descriptor.JspPropertyGroupDescriptor;
 
 public class JspPropertyGroup implements JspPropertyGroupDescriptor
 {
@@ -165,5 +165,11 @@ public class JspPropertyGroup implements JspPropertyGroupDescriptor
     {
         return error_on_undeclared_namespace_;
     }
+
+	@Override
+	public String getErrorOnELNotFound() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
 

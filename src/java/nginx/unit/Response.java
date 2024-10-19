@@ -3,34 +3,25 @@ package nginx.unit;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-
-import java.lang.IllegalArgumentException;
-import java.lang.String;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-
 import java.text.SimpleDateFormat;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.Vector;
-
-import javax.servlet.DispatcherType;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.http.MimeTypes;
 import org.eclipse.jetty.util.StringUtil;
+
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class Response implements HttpServletResponse {
 
@@ -276,27 +267,12 @@ public class Response implements HttpServletResponse {
 
     private static native boolean containsHeader(long req_info_ptr, byte[] name);
 
-
-    @Override
-    @Deprecated
-    public String encodeRedirectUrl(String url)
-    {
-        return encodeRedirectURL(url);
-    }
-
     @Override
     public String encodeRedirectURL(String url)
     {
         log("encodeRedirectURL: " + url);
 
         return url;
-    }
-
-    @Override
-    @Deprecated
-    public String encodeUrl(String url)
-    {
-        return encodeURL(url);
     }
 
     @Override
@@ -526,20 +502,6 @@ public class Response implements HttpServletResponse {
     }
 
     private static native void setStatus(long req_info_ptr, int sc);
-
-
-    @Override
-    @Deprecated
-    public void setStatus(int sc, String sm)
-    {
-        trace("setStatus: " + sc + "; " + sm);
-
-        if (isCommitted()) {
-            return;
-        }
-
-        setStatus(req_info_ptr, sc);
-    }
 
 
     @Override

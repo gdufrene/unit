@@ -2,8 +2,9 @@ package nginx.unit;
 
 import java.io.IOException;
 
-import javax.servlet.ReadListener;
-import javax.servlet.ServletInputStream;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletInputStream;
+
 
 public class InputStream extends ServletInputStream {
 

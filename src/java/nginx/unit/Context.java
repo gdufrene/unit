@@ -1,37 +1,23 @@
 package nginx.unit;
 
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ClassInfo;
-import io.github.classgraph.ClassInfoList;
-import io.github.classgraph.ScanResult;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-
-import java.lang.ClassLoader;
-import java.lang.ClassNotFoundException;
-import java.lang.IllegalArgumentException;
-import java.lang.IllegalStateException;
 import java.lang.reflect.Constructor;
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
-
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,55 +34,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
-
-import javax.servlet.DispatcherType;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.FilterRegistration.Dynamic;
-import javax.servlet.FilterRegistration;
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.Registration;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextAttributeEvent;
-import javax.servlet.ServletContextAttributeListener;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletResponse;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestAttributeEvent;
-import javax.servlet.ServletRequestAttributeListener;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.ServletSecurityElement;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.annotation.HandlesTypes;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.annotation.WebInitParam;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.annotation.WebFilter;
-import javax.servlet.annotation.WebListener;
-import javax.servlet.descriptor.JspConfigDescriptor;
-import javax.servlet.descriptor.JspPropertyGroupDescriptor;
-import javax.servlet.descriptor.TaglibDescriptor;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionIdListener;
-import javax.servlet.http.HttpSessionListener;
 
 import javax.websocket.server.ServerEndpoint;
 
@@ -104,18 +42,64 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import nginx.unit.websocket.WsSession;
-
+import org.apache.jasper.servlet.JasperInitializer;
+import org.apache.jasper.servlet.JspServlet;
 import org.eclipse.jetty.http.MimeTypes;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import org.apache.jasper.servlet.JspServlet;
-import org.apache.jasper.servlet.JasperInitializer;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
+
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.Registration;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextAttributeEvent;
+import jakarta.servlet.ServletContextAttributeListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletRequestAttributeListener;
+import jakarta.servlet.ServletRequestEvent;
+import jakarta.servlet.ServletRequestListener;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.ServletSecurityElement;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.MultipartConfig;
+import jakarta.servlet.annotation.WebFilter;
+import jakarta.servlet.annotation.WebInitParam;
+import jakarta.servlet.annotation.WebListener;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.descriptor.JspPropertyGroupDescriptor;
+import jakarta.servlet.descriptor.TaglibDescriptor;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSessionAttributeListener;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionIdListener;
+import jakarta.servlet.http.HttpSessionListener;
+import nginx.unit.websocket.WsSession;
 
 
 public class Context implements ServletContext, InitParams
@@ -425,8 +409,10 @@ public class Context implements ServletContext, InitParams
         loader_ = new UnitClassLoader(urls,
             Context.class.getClassLoader().getParent());
 
+        /* TODO: Re-enable Websocket
         Class wsSession_class = WsSession.class;
         trace("wsSession.test: " + WsSession.wsSession_test());
+        */
 
         ClassLoader old = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(loader_);
@@ -437,13 +423,13 @@ public class Context implements ServletContext, InitParams
             }
 
             ClassGraph classgraph = new ClassGraph()
-                //.verbose()
+                .verbose()
                 .overrideClassLoaders(loader_)
                 .ignoreParentClassLoaders()
                 .enableClassInfo()
                 .enableAnnotationInfo()
                 //.enableSystemPackages()
-                .acceptModules("javax.*")
+                .acceptModules("jakarta.*")
                 //.enableAllInfo()
                 ;
 
@@ -455,9 +441,11 @@ public class Context implements ServletContext, InitParams
 
             ScanResult scan_res = classgraph.scan();
 
+/*
             javax.websocket.server.ServerEndpointConfig.Configurator.setDefault(new nginx.unit.websocket.server.DefaultServerEndpointConfigurator());
 
             loadInitializer(new nginx.unit.websocket.server.WsSci(), scan_res);
+*/            
 
             if (!metadata_complete_) {
                 loadInitializers(scan_res);
@@ -526,6 +514,9 @@ public class Context implements ServletContext, InitParams
             }
 
             Collections.sort(prefix_patterns_);
+        } catch(Exception e) {
+        	trace(e.getMessage());
+        	e.printStackTrace();
         } finally {
             Thread.currentThread().setContextClassLoader(old);
         }
@@ -947,7 +938,7 @@ public class Context implements ServletContext, InitParams
             {
                 trace("service: '" + path + "' not started with '" + context_path_ + "'");
 
-                resp.sendError(resp.SC_NOT_FOUND);
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
                 return;
             }
 
@@ -955,7 +946,7 @@ public class Context implements ServletContext, InitParams
                 String url = req.getRequestURL().toString();
                 if (!url.endsWith("/")) {
                     resp.setHeader("Location", url + "/");
-                    resp.sendError(resp.SC_FOUND);
+                    resp.sendError(HttpServletResponse.SC_FOUND);
                     return;
                 }
             }
@@ -1975,9 +1966,12 @@ public class Context implements ServletContext, InitParams
             }
 
             if (system_jsp_servlet_) {
+            	// TODO: init jasper
+            	/*
                 JasperInitializer ji = new JasperInitializer();
 
                 ji.onStartup(Collections.emptySet(), Context.this);
+                */
             }
 
             if (servlet_ == null) {
@@ -2961,39 +2955,6 @@ public class Context implements ServletContext, InitParams
     {
         trace("getServerInfo: " + server_info_);
         return server_info_;
-    }
-
-    @Override
-    @Deprecated
-    public Servlet getServlet(String name) throws ServletException
-    {
-        log("getServlet for " + name);
-        return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    @Deprecated
-    public Enumeration<String> getServletNames()
-    {
-        log("getServletNames");
-        return Collections.enumeration(Collections.EMPTY_LIST);
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    @Deprecated
-    public Enumeration<Servlet> getServlets()
-    {
-        log("getServlets");
-        return Collections.enumeration(Collections.EMPTY_LIST);
-    }
-
-    @Override
-    @Deprecated
-    public void log(Exception exception, String msg)
-    {
-        log(msg, exception);
     }
 
     @Override

@@ -223,6 +223,7 @@ NXT_UNIT_JAR=nginx-unit-jsc-${NXT_JAVA_MODULE}-$NXT_VERSION.jar
 NXT_WS_API_JAR=websocket-api-${NXT_JAVA_MODULE}-$NXT_VERSION.jar
 
 NXT_JAVA_BUILD_CP=$NXT_BUILD_DIR/$NXT_JAVA_MODULE
+NXT_JAVA_BUILD_P=""
 NXT_JAVA_INSTALL_JARS=
 NXT_JAVA_UNINSTALL_JARS=
 
@@ -238,7 +239,7 @@ cat << END > $NXT_JAVA_JARS
 static const char *nxt_java_system_jars[] = {
 END
 
-NXT_TOMCAT_VERSION=9.0.93
+NXT_TOMCAT_VERSION=10.1.31
 
 NXT_JAR_VERSION=$NXT_TOMCAT_VERSION
 
@@ -271,7 +272,7 @@ NXT_JAR_NAME=tomcat-util
 . auto/modules/java_get_jar
 
 NXT_JAR_NAME=ecj
-NXT_JAR_VERSION=3.26.0
+NXT_JAR_VERSION=3.39.0
 NXT_JAR_NAMESPACE=org/eclipse/jdt/
 . auto/modules/java_get_jar
 
@@ -284,7 +285,7 @@ static const char *nxt_java_unit_jars[] = {
     "$NXT_UNIT_JAR",
 END
 
-NXT_JAR_VERSION=9.4.56.v20240826
+NXT_JAR_VERSION=12.0.14
 NXT_JAR_NAMESPACE=org/eclipse/jetty/
 
 NXT_JAR_NAME=jetty-util
@@ -297,8 +298,13 @@ NXT_JAR_NAME=jetty-http
 . auto/modules/java_get_jar
 
 NXT_JAR_NAME=classgraph
-NXT_JAR_VERSION=4.8.175
+NXT_JAR_VERSION=4.8.177
 NXT_JAR_NAMESPACE=io/github/classgraph/
+. auto/modules/java_get_jar
+
+NXT_JAR_NAME=slf4j-api
+NXT_JAR_VERSION=2.0.16
+NXT_JAR_NAMESPACE=org/slf4j/
 . auto/modules/java_get_jar
 
 cat << END >> $NXT_JAVA_JARS
@@ -386,6 +392,7 @@ END
 done
 
 NXT_JAVA_SRCS=" \
+    src/java/module-info.java \
     src/java/nginx/unit/Context.java \
     src/java/nginx/unit/DynamicDispatcherRequest.java \
     src/java/nginx/unit/DynamicPathRequest.java \
@@ -563,10 +570,11 @@ if ! grep ^$NXT_BUILD_DIR/$NXT_UNIT_JAR: $NXT_MAKEFILE 2>&1 > /dev/null; then
 NXT_JAVA_SRCS = $NXT_JAVA_SRCS
 
 $NXT_BUILD_DIR/$NXT_JAVA_MODULE/.nginx.unit.classes: \$(NXT_JAVA_SRCS) \\
-    $NXT_BUILD_DIR/$NXT_WS_API_JAR
+	$NXT_BUILD_DIR/$NXT_WS_API_JAR
 	rm -rf $NXT_BUILD_DIR/$NXT_JAVA_MODULE/nginx/unit
 	$NXT_JAVAC -d $NXT_BUILD_DIR/$NXT_JAVA_MODULE \\
-		-cp $NXT_JAVA_BUILD_CP:$NXT_BUILD_DIR/$NXT_WS_API_JAR \\
+		-cp $NXT_BUILD_DIR/$NXT_JAVA_MODULE \\
+		-p "$NXT_JAVA_BUILD_P:$NXT_JAR_LOCAL_REPO/org/eclipse/jetty/jetty-io/12.0.14/jetty-io-12.0.14.jar:$NXT_BUILD_DIR/$NXT_WS_API_JAR" \\
 		\$(NXT_JAVA_SRCS)
 	touch \$@
 

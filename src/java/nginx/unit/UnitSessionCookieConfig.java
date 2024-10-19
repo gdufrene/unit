@@ -1,6 +1,9 @@
 package nginx.unit;
 
-import javax.servlet.SessionCookieConfig;
+import java.util.HashMap;
+import java.util.Map;
+
+import jakarta.servlet.SessionCookieConfig;
 
 /*
 
@@ -23,6 +26,32 @@ public class UnitSessionCookieConfig implements SessionCookieConfig {
     private boolean httpOnly = true;
     private boolean secure = false;
     private int maxAge = -1;
+    
+    private HashMap<String, String> attributes;
+    
+    @Override
+	public String getAttribute(String arg0) {
+		if (attributes != null) {
+			return attributes.get(arg0);
+		}
+		return null;
+	}
+    
+    @Override
+    public void setAttribute(String arg0, String arg1) {
+    	if (attributes == null) {
+    		attributes = new HashMap<>();
+    	}
+    	attributes.put(arg0, arg1);
+    }
+    
+	@Override
+	public Map<String, String> getAttributes() {
+		if (attributes == null) {
+			return Map.of();
+		}
+		return Map.copyOf(attributes);
+	}
 
     @Override
     public void setName(String name)
@@ -107,4 +136,6 @@ public class UnitSessionCookieConfig implements SessionCookieConfig {
     {
         return maxAge;
     }
+
+
 }

@@ -1,6 +1,6 @@
 package nginx.unit;
 
-import javax.servlet.DispatcherType;
+import jakarta.servlet.DispatcherType;
 
 public interface DynamicDispatcherRequest
 {

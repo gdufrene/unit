@@ -2,8 +2,10 @@ package nginx.unit;
 
 import java.util.List;
 
-import javax.servlet.ServletRequestAttributeEvent;
-import javax.servlet.ServletRequestAttributeListener;
+import jakarta.servlet.ServletRequestAttributeEvent;
+import jakarta.servlet.ServletRequestAttributeListener;
+
+
 
 public class RequestAttrProxy implements ServletRequestAttributeListener
 {
