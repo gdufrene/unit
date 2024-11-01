@@ -22,7 +22,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
@@ -34,6 +33,7 @@ import javax.websocket.PongMessage;
 
 import org.apache.juli.logging.Log;
 import org.apache.tomcat.util.ExceptionUtils;
+import org.apache.tomcat.util.buf.Utf8Decoder;
 import org.apache.tomcat.util.res.StringManager;
 
 /**
@@ -57,18 +57,12 @@ public abstract class WsFrameBase {
     private final CharBuffer controlBufferText = CharBuffer.allocate(125);
 
     // Attributes of the current message
-    // TODO: fix decoder ?
-    private final CharsetDecoder utf8DecoderControl = StandardCharsets.UTF_8.newDecoder();
-    /*
+    private final CharsetDecoder utf8DecoderControl = new Utf8Decoder().
             onMalformedInput(CodingErrorAction.REPORT).
             onUnmappableCharacter(CodingErrorAction.REPORT);
-            */
-    private final CharsetDecoder utf8DecoderMessage = StandardCharsets.UTF_8.newDecoder();
-    /*
+    private final CharsetDecoder utf8DecoderMessage = new Utf8Decoder().
             onMalformedInput(CodingErrorAction.REPORT).
             onUnmappableCharacter(CodingErrorAction.REPORT);
-            */
-    
     private boolean continuationExpected = false;
     private boolean textMessage = false;
     private ByteBuffer messageBufferBinary;

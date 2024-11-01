@@ -28,23 +28,26 @@ import java.util.EventListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import javax.websocket.server.ServerEndpoint;
+// import javax.websocket.server.ServerEndpoint;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.jasper.servlet.JasperInitializer;
-import org.apache.jasper.servlet.JspServlet;
-import org.eclipse.jetty.http.MimeTypes;
+// import org.apache.jasper.servlet.JasperInitializer;
+// import org.apache.jasper.servlet.JspServlet;
+// import org.eclipse.jetty.http.MimeTypes;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -99,7 +102,7 @@ import jakarta.servlet.http.HttpSessionAttributeListener;
 import jakarta.servlet.http.HttpSessionEvent;
 import jakarta.servlet.http.HttpSessionIdListener;
 import jakarta.servlet.http.HttpSessionListener;
-import nginx.unit.websocket.WsSession;
+// import nginx.unit.websocket.WsSession;
 
 
 public class Context implements ServletContext, InitParams
@@ -368,6 +371,7 @@ public class Context implements ServletContext, InitParams
         }
 
         if (!root.isDirectory()) {
+        	trace("Extract war: " + root);
             root = extractWar(root);
             extracted_dir_ = root;
         }
@@ -377,9 +381,11 @@ public class Context implements ServletContext, InitParams
         Path tmpDir = Files.createTempDirectory("webapp");
         temp_dir_ = tmpDir.toFile();
         setAttribute(ServletContext.TEMPDIR, temp_dir_);
+        trace("Set tempdir to: " + temp_dir_);
 
         File web_inf_classes = new File(root, WEB_INF_CLASSES);
         if (web_inf_classes.exists() && web_inf_classes.isDirectory()) {
+        	trace("Classloader, add webinf classes dir: " + temp_dir_);
             url_list.add(new URL("file:" + root.getAbsolutePath() + "/" + WEB_INF_CLASSES));
         }
 
@@ -388,6 +394,7 @@ public class Context implements ServletContext, InitParams
 
         if (libs != null) {
             for (File l : libs) {
+            	trace("Classloader, add lib jar: " + l);
                 url_list.add(new URL("file:" + l.getAbsolutePath()));
             }
         }
@@ -404,6 +411,7 @@ public class Context implements ServletContext, InitParams
             pending_listener_classnames_.add(custom_listener);
         }
 
+        trace("process web xml in: " + root);
         processWebXml(root);
 
         loader_ = new UnitClassLoader(urls,
@@ -415,18 +423,20 @@ public class Context implements ServletContext, InitParams
         */
 
         ClassLoader old = Thread.currentThread().getContextClassLoader();
+        trace("change classloader from: " + old.getName() + " to: " + loader_.getName());
         Thread.currentThread().setContextClassLoader(loader_);
 
         try {
             for (String listener_classname : pending_listener_classnames_) {
+            	trace("add pending listenner: " + listener_classname);
                 addListener(listener_classname);
             }
 
             ClassGraph classgraph = new ClassGraph()
-                .verbose()
+                // .verbose()
                 .overrideClassLoaders(loader_)
                 .ignoreParentClassLoaders()
-                .enableClassInfo()
+                //.enableClassInfo()
                 .enableAnnotationInfo()
                 //.enableSystemPackages()
                 .acceptModules("jakarta.*")
@@ -439,6 +449,7 @@ public class Context implements ServletContext, InitParams
                 classgraph.verbose();
             }
 
+            trace("scan classes...");
             ScanResult scan_res = classgraph.scan();
 
 /*
@@ -468,6 +479,9 @@ public class Context implements ServletContext, InitParams
                 welcome_files_.add("index.jsp");
             }
 
+            /*
+             * TODO: Detect jasper and enable jsp compilation servlet
+             *
             ServletReg jsp_servlet = name2servlet_.get("jsp");
             if (jsp_servlet == null) {
                 jsp_servlet = new ServletReg("jsp", JspServlet.class);
@@ -485,6 +499,7 @@ public class Context implements ServletContext, InitParams
                 parseURLPattern("*.jsp", jsp_servlet);
                 parseURLPattern("*.jspx", jsp_servlet);
             }
+            */
 
             ServletReg def_servlet = name2servlet_.get("default");
             if (def_servlet == null) {
@@ -603,12 +618,16 @@ public class Context implements ServletContext, InitParams
 
             return super.getResource(name);
         }
+        
+        ReentrantLock lock = new ReentrantLock();
 
         @Override
         protected Class<?> loadClass(String name, boolean resolve)
             throws ClassNotFoundException
         {
-            synchronized (this) {
+        	lock.lock();
+        	
+            try {
                 Class<?> res = findLoadedClass(name);
                 if (res != null) {
                     return res;
@@ -644,7 +663,9 @@ public class Context implements ServletContext, InitParams
                 }
 
                 return super.loadClass(name, resolve);
-            }
+            } finally {
+				lock.unlock();
+			}
 
         }
     }
@@ -1737,6 +1758,8 @@ public class Context implements ServletContext, InitParams
         }
 
 
+        /*
+         * TODO: websockets endpoints
         ClassInfoList endpoints = scan_res.getClassesWithAnnotation(ServerEndpoint.class.getName());
 
         for (ClassInfo ci : endpoints) {
@@ -1749,7 +1772,8 @@ public class Context implements ServletContext, InitParams
             }
 
             trace("scanClasses: server end point: " + ci.getName());
-        }
+        
+         */
     }
 
     public void stop() throws IOException
@@ -2577,15 +2601,39 @@ public class Context implements ServletContext, InitParams
         trace("getMajorVersion");
         return SERVLET_MAJOR_VERSION;
     }
+    
+    /**
+     * Retrieve the extension of a file path (not a directory).
+     * This is the extension of filename of the last segment of the file path with a substring
+     * for the extension (if any), including the dot, lower-cased.
+     *
+     * @param filename The string path
+     * @return The last segment extension excluding the leading dot;
+     *         or null if not a file;
+     *         or null if there is no extension present
+     * @see String org.eclipse.jetty.util.FileID.getExtension(String filename)
+     */
+    public static String getExtension(String filename)
+    {
+        if (filename == null)
+            return null; // no filename
+        if (filename.endsWith("/") || filename.endsWith("\\"))
+            return null; // not a filename
+        int lastSlash = filename.lastIndexOf(File.separator);
+        if (lastSlash >= 0)
+            filename = filename.substring(lastSlash + 1);
+        int lastDot = filename.lastIndexOf('.');
+        if (lastDot <= 0)
+            return null; // no extension, or only filename that is only an extension (".foo")
+        return filename.substring(lastDot + 1).toLowerCase(Locale.ENGLISH);
+    }
 
     @Override
     public String getMimeType(String file)
     {
         log("getMimeType for " + file);
-        if (mime_types_ == null) {
-            mime_types_ = new MimeTypes();
-        }
-        return mime_types_.getMimeByExtension(file);
+        String ext = getExtension(file);
+        return MimeTypes.getMimeByExtension(ext);
     }
 
     @Override

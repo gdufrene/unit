@@ -15,8 +15,8 @@ import java.util.Enumeration;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.eclipse.jetty.http.MimeTypes;
-import org.eclipse.jetty.util.StringUtil;
+// import org.eclipse.jetty.http.MimeTypes;
+// import org.eclipse.jetty.util.StringUtil;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletOutputStream;
@@ -146,7 +146,8 @@ public class Response implements HttpServletResponse {
     {
         trace("addCookie: " + cookie.getName() + "=" + cookie.getValue());
 
-        if (StringUtil.isBlank(cookie.getName())) {
+        
+        if (cookie.getName() == null || cookie.getName().isBlank()) {
             throw new IllegalArgumentException("Cookie.name cannot be blank/null");
         }
 
@@ -421,6 +422,13 @@ public class Response implements HttpServletResponse {
         }
 
         sendRedirect(req_info_ptr, location.getBytes(ISO_8859_1));
+    }
+    
+    @Override
+    public void sendRedirect(String location, int code, boolean e) throws IOException
+    {
+    	// TODO: which logic ?
+    	sendRedirect(req_info_ptr, location.getBytes(ISO_8859_1));
     }
 
     private static native void sendRedirect(long req_info_ptr, byte[] location);
@@ -730,9 +738,15 @@ public class Response implements HttpServletResponse {
             contentTypeHeader = null;
             return;
         }
+        
 
-        String charset = MimeTypes.getCharsetFromContentType(type);
-        String ctype = MimeTypes.getContentTypeWithoutCharset(type);
+        int charsetPos = type.indexOf(";charset=");
+        String charset = charsetPos >= 0 ? type.substring(charsetPos + 9) : null;
+        // String charset = MimeTypes.getCharsetFromContentType(type);
+        
+        
+        String ctype = charsetPos >= 0 ? type.substring(0, charsetPos) : type;
+        
 
         if (writer != null
             && charset != null

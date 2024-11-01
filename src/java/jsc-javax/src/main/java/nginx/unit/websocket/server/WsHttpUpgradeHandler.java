@@ -16,10 +16,15 @@
  */
 package nginx.unit.websocket.server;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpUpgradeHandler;
+import javax.servlet.http.WebConnection;
 import javax.websocket.CloseReason;
+import javax.websocket.CloseReason.CloseCodes;
 import javax.websocket.DeploymentException;
 import javax.websocket.Endpoint;
 import javax.websocket.EndpointConfig;
@@ -29,12 +34,11 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.res.StringManager;
 
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpUpgradeHandler;
-import jakarta.servlet.http.WebConnection;
-import nginx.unit.Request;
 import nginx.unit.websocket.Transformation;
+import nginx.unit.websocket.WsIOException;
 import nginx.unit.websocket.WsSession;
+
+import nginx.unit.Request;
 
 /**
  * Servlet 3.1 HTTP upgrade handler for WebSocket connections.

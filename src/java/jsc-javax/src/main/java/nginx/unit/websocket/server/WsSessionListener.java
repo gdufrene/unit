@@ -16,8 +16,8 @@
  */
 package nginx.unit.websocket.server;
 
-import jakarta.servlet.http.HttpSessionEvent;
-import jakarta.servlet.http.HttpSessionListener;
+import javax.servlet.http.HttpSessionEvent;
+import javax.servlet.http.HttpSessionListener;
 
 public class WsSessionListener implements HttpSessionListener {
 

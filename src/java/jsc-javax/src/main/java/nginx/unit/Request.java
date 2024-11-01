@@ -3,58 +3,71 @@ package nginx.unit;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+
+import java.lang.IllegalArgumentException;
+import java.lang.IllegalStateException;
+import java.lang.Object;
+import java.lang.String;
+import java.lang.StringBuffer;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.Principal;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.eclipse.jetty.http.HttpFields;
-import org.eclipse.jetty.http.MimeTypes;
-//import org.eclipse.jetty.http.MultiPartFormInputStream;
-//import org.eclipse.jetty.server.CookieCutter;
+import java.security.Principal;
+
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
+import javax.servlet.MultipartConfigElement;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletRequestAttributeEvent;
+import javax.servlet.ServletRequestAttributeListener;
+import javax.servlet.ServletResponse;
+import javax.servlet.SessionTrackingMode;
+import javax.servlet.SessionCookieConfig;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpUpgradeHandler;
+import javax.servlet.http.Part;
+
 import org.eclipse.jetty.util.IO;
 import org.eclipse.jetty.util.MultiMap;
-import org.eclipse.jetty.util.StringUtil;
 import org.eclipse.jetty.util.UrlEncoded;
+import org.eclipse.jetty.util.StringUtil;
 
-import jakarta.servlet.AsyncContext;
-import jakarta.servlet.DispatcherType;
-import jakarta.servlet.MultipartConfigElement;
-import jakarta.servlet.RequestDispatcher;
-import jakarta.servlet.ServletConnection;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletInputStream;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletRequestAttributeEvent;
-import jakarta.servlet.ServletRequestAttributeListener;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.SessionCookieConfig;
-import jakarta.servlet.SessionTrackingMode;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpUpgradeHandler;
-import jakarta.servlet.http.Part;
-import nginx.unit.websocket.WsIOException;
+import org.eclipse.jetty.server.CookieCutter;
+import org.eclipse.jetty.http.MultiPartFormInputStream;
+import org.eclipse.jetty.http.HttpFields;
+import org.eclipse.jetty.http.MimeTypes;
+
 import nginx.unit.websocket.WsSession;
+import nginx.unit.websocket.WsIOException;
 
 public class Request implements HttpServletRequest, DynamicPathRequest
 {
@@ -66,8 +79,7 @@ public class Request implements HttpServletRequest, DynamicPathRequest
 
     protected boolean cookiesParsed = false;
 
-    //protected CookieCutter cookies = null;
-    private Cookie[] cookies;
+    protected CookieCutter cookies = null;
 
     private final Map<String, Object> attributes = new HashMap<>();
 
@@ -113,8 +125,7 @@ public class Request implements HttpServletRequest, DynamicPathRequest
 
     public static final String BARE = "nginx.unit.request.bare";
 
-    //private MultiPartFormInputStream multi_parts;
-    private Object multi_parts;
+    private MultiPartFormInputStream multi_parts;
     private MultipartConfigElement multipart_config;
 
     public Request(Context ctx, long req_info, long req) {
@@ -164,30 +175,25 @@ public class Request implements HttpServletRequest, DynamicPathRequest
             parseCookies();
         }
 
-        // TODO: fix me ?
-        
         //Javadoc for Request.getCookies() stipulates null for no cookies
-        if (cookies == null || cookies.length == 0) {
+        if (cookies == null || cookies.getCookies().length == 0) {
             return null;
         }
 
-        return cookies;
+        return cookies.getCookies();
     }
 
     protected void parseCookies()
     {
         cookiesParsed = true;
 
-        // TODO: really parse cookies
-        cookies = new Cookie[0];
+        cookies = new CookieCutter();
 
-        /*
         Enumeration<String> cookie_headers = getHeaders("Cookie");
 
         while (cookie_headers.hasMoreElements()) {
             cookies.addCookieField(cookie_headers.nextElement());
         }
-        */
     }
 
     @Override
@@ -286,15 +292,11 @@ public class Request implements HttpServletRequest, DynamicPathRequest
     {
         trace("getPart: " + name);
 
-        /*
         if (multi_parts == null) {
             parseMultiParts();
         }
 
         return multi_parts.getPart(name);
-        */
-        // TODO
-        return null;
     }
 
     @Override
@@ -302,26 +304,17 @@ public class Request implements HttpServletRequest, DynamicPathRequest
     {
         trace("getParts");
 
-        /*
         if (multi_parts == null) {
             parseMultiParts();
         }
 
         return multi_parts.getParts();
-        */
-        // TODO
-        return Collections.emptyList();
-        
     }
 
     private boolean checkMultiPart(String content_type)
     {
-    	/*
         return content_type != null
                && MimeTypes.Type.MULTIPART_FORM_DATA.is(HttpFields.valueParameters(content_type, null));
-               */
-    	// TODO
-    	return false;
     }
 
     private void parseMultiParts() throws IOException, ServletException, IllegalStateException
@@ -343,11 +336,8 @@ public class Request implements HttpServletRequest, DynamicPathRequest
     {
         File tmpDir = (File) context.getAttribute(ServletContext.TEMPDIR);
 
-        /*
         multi_parts = new MultiPartFormInputStream(getInputStream(),
             content_type, multipart_config, tmpDir);
-            */
-        // TODO
     }
 
     public void setMultipartConfig(MultipartConfigElement mce)
@@ -606,6 +596,19 @@ public class Request implements HttpServletRequest, DynamicPathRequest
     }
 
     @Override
+    @Deprecated
+    public boolean isRequestedSessionIdFromUrl()
+    {
+        trace("isRequestedSessionIdFromUrl");
+
+        if (!request_session_id_parsed) {
+            parseRequestSessionId();
+        }
+
+        return request_session_id_from_url;
+    }
+
+    @Override
     public boolean isRequestedSessionIdFromURL()
     {
         trace("isRequestedSessionIdFromURL");
@@ -721,7 +724,7 @@ public class Request implements HttpServletRequest, DynamicPathRequest
         String content_type = getContentType(req_ptr);
 
         if (characterEncoding == null && content_type != null) {
-            MimeTypes.Type mime = MimeTypes.getBaseType(content_type);
+            MimeTypes.Type mime = MimeTypes.CACHE.get(content_type);
             String charset = (mime == null || mime.getCharset() == null) ? MimeTypes.getCharsetFromContentType(content_type) : mime.getCharset().toString();
             if (charset != null) {
                 characterEncoding = charset;
@@ -847,14 +850,9 @@ public class Request implements HttpServletRequest, DynamicPathRequest
                 }
 
                 if (multi_parts != null) {
-                	// TODO
-                    //Collection<Part> parts = multi_parts.getParts();
-                	Collection<Part> parts = Collections.emptyList();
+                    Collection<Part> parts = multi_parts.getParts();
 
                     String _charset_ = null;
-                    // TODO
-                    Part charset_part = null;
-                    /*
                     Part charset_part = multi_parts.getPart("_charset_");
                     if (charset_part != null) {
                         try (java.io.InputStream is = charset_part.getInputStream())
@@ -864,7 +862,6 @@ public class Request implements HttpServletRequest, DynamicPathRequest
                             _charset_ = new String(os.toByteArray(),StandardCharsets.UTF_8);
                         }
                     }
-                    */
 
                     /*
                     Select Charset to use for this part. (NOTE: charset behavior is for the part value only and not the part header/field names)
@@ -982,6 +979,15 @@ public class Request implements HttpServletRequest, DynamicPathRequest
         }
 
         return reader;
+    }
+
+    @Override
+    @Deprecated
+    public String getRealPath(String path)
+    {
+        trace("getRealPath: " + path);
+
+        return context.getRealPath(path);
     }
 
     @Override
@@ -1328,25 +1334,5 @@ public class Request implements HttpServletRequest, DynamicPathRequest
     }
 
     private static native void closeWs(long req_info_ptr);
-
-	@Override
-	public String getProtocolRequestId() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getRequestId() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ServletConnection getServletConnection() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	
 }
 

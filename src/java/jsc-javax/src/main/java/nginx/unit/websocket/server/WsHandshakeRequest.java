@@ -27,12 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.websocket.server.HandshakeRequest;
 
 import org.apache.tomcat.util.collections.CaseInsensitiveKeyMap;
 import org.apache.tomcat.util.res.StringManager;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Represents the request that this session was opened under.

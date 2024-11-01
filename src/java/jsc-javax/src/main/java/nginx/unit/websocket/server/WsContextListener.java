@@ -16,9 +16,9 @@
  */
 package nginx.unit.websocket.server;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 
 /**
  * In normal usage, this {@link ServletContextListener} does not need to be

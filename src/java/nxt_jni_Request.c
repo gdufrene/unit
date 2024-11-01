@@ -68,12 +68,14 @@ static void JNICALL nxt_java_Request_trace(JNIEnv *env, jclass cls,
     jlong req_info_ptr, jstring msg, jint msg_len);
 static jobject JNICALL nxt_java_Request_getResponse(JNIEnv *env, jclass cls,
     jlong req_info_ptr);
+/*
 static void JNICALL nxt_java_Request_sendWsFrameBuf(JNIEnv *env, jclass cls,
     jlong req_info_ptr, jobject buf, jint pos, jint len, jbyte opCode, jboolean last);
 static void JNICALL nxt_java_Request_sendWsFrameArr(JNIEnv *env, jclass cls,
     jlong req_info_ptr, jarray arr, jint pos, jint len, jbyte opCode, jboolean last);
 static void JNICALL nxt_java_Request_closeWs(JNIEnv *env, jclass cls,
     jlong req_info_ptr);
+*/
 
 
 static jclass     nxt_java_Request_class;
@@ -103,6 +105,7 @@ nxt_java_initRequest(JNIEnv *env, jobject cl)
         return NXT_UNIT_ERROR;
     }
 
+    /*
     nxt_java_Request_processWsFrame = (*env)->GetMethodID(env, cls, "processWsFrame", "(Ljava/nio/ByteBuffer;BZ)V");
     if (nxt_java_Request_processWsFrame == NULL) {
         (*env)->DeleteGlobalRef(env, cls);
@@ -114,6 +117,7 @@ nxt_java_initRequest(JNIEnv *env, jobject cl)
         (*env)->DeleteGlobalRef(env, cls);
         return NXT_UNIT_ERROR;
     }
+    */
 
     JNINativeMethod request_methods[] = {
         { (char *) "getHeader",
@@ -216,6 +220,7 @@ nxt_java_initRequest(JNIEnv *env, jobject cl)
           (char *) "(J)Lnginx/unit/Response;",
           nxt_java_Request_getResponse },
 
+/*
         { (char *) "sendWsFrame",
           (char *) "(JLjava/nio/ByteBuffer;IIBZ)V",
           nxt_java_Request_sendWsFrameBuf },
@@ -227,7 +232,7 @@ nxt_java_initRequest(JNIEnv *env, jobject cl)
         { (char *) "closeWs",
           (char *) "(J)V",
           nxt_java_Request_closeWs },
-
+*/
     };
 
     res = (*env)->RegisterNatives(env, nxt_java_Request_class,
@@ -748,7 +753,7 @@ nxt_java_Request_getResponse(JNIEnv *env, jclass cls, jlong req_info_ptr)
     return data->jresp;
 }
 
-
+/*
 static void JNICALL
 nxt_java_Request_sendWsFrameBuf(JNIEnv *env, jclass cls,
     jlong req_info_ptr, jobject buf, jint pos, jint len, jbyte opCode, jboolean last)
@@ -806,7 +811,7 @@ nxt_java_Request_closeWs(JNIEnv *env, jclass cls, jlong req_info_ptr)
 
     nxt_unit_request_done(req, NXT_UNIT_OK);
 }
-
+*/
 
 void
 nxt_java_Request_websocket(JNIEnv *env, jobject jreq, jobject jbuf,

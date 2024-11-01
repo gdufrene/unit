@@ -3,8 +3,10 @@ package nginx.unit;
 import java.util.List;
 import java.util.Map;
 
+/*
 import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.util.UrlEncoded;
+*/
 
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.MultipartConfigElement;
@@ -28,7 +30,7 @@ public class ForwardRequestWrapper implements DynamicPathRequest
 
     private final DispatcherType orig_dtype;
 
-    private MultiMap<String> orig_parameters;
+    // private MultiMap<String> orig_parameters;
 
     public ForwardRequestWrapper(ServletRequest request)
     {
@@ -107,6 +109,7 @@ public class ForwardRequestWrapper implements DynamicPathRequest
     @Override
     public void setQueryString(String query)
     {
+    	/*
         if (query != null) {
             orig_parameters = request_.getParameters();
 
@@ -121,6 +124,9 @@ public class ForwardRequestWrapper implements DynamicPathRequest
 
             request_.setQueryString(query);
         }
+        */
+    	// TODO
+    	throw new RuntimeException("not supported");
     }
 
     @Override
@@ -142,9 +148,12 @@ public class ForwardRequestWrapper implements DynamicPathRequest
         request_.setServletPath(orig_filter_path, orig_servlet_path, orig_path_info);
         request_.setQueryString(orig_query);
 
+        // TODO
+        /*
         if (orig_parameters != null) {
             request_.setParameters(orig_parameters);
         }
+        */
 
         request_.setMultipartConfig(orig_multipart_config);
 

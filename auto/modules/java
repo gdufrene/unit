@@ -7,6 +7,7 @@ shift
 NXT_JAVA_HOME=${JAVA_HOME-}
 NXT_JAR_REPO=https://repo1.maven.org/maven2/
 NXT_JAR_LOCAL_REPO=$HOME/.m2/repository/
+NXT_SPEC_TARGET=javax
 
 for nxt_option; do
 
@@ -24,6 +25,7 @@ for nxt_option; do
         --local-repo=*) NXT_JAR_LOCAL_REPO="$value"                           ;;
         --sha512=*)     NXT_SHA512_TOOL="$value"                              ;;
         --jars=*)       NXT_JARS="$value"                                     ;;
+		--target=*)     NXT_SPEC_TARGET="$value"                              ;;
 
         --help)
             cat << END
@@ -37,6 +39,8 @@ for nxt_option; do
                           default: "$NXT_JAR_LOCAL_REPO"
     --sha512=SHA512       set command for SHA512 check
     --jars=DIR            set jars install/search directory
+    --target=SPEC         use "javax" or "jakarta" servlet spec
+                          default: "javax"
 
 END
             exit 0
@@ -219,7 +223,8 @@ fi
 
 . ./version
 
-NXT_UNIT_JAR=nginx-unit-jsc-${NXT_JAVA_MODULE}-$NXT_VERSION.jar
+NXT_UNIT_JAR=nginx-unit-jsc-${NXT_SPEC_TARGET}-$NXT_VERSION.jar
+# TODO: Fix websocket for jakarta
 NXT_WS_API_JAR=websocket-api-${NXT_JAVA_MODULE}-$NXT_VERSION.jar
 
 NXT_JAVA_BUILD_CP=$NXT_BUILD_DIR/$NXT_JAVA_MODULE
@@ -239,42 +244,16 @@ cat << END > $NXT_JAVA_JARS
 static const char *nxt_java_system_jars[] = {
 END
 
-NXT_TOMCAT_VERSION=10.1.31
+cd src/java/jsc-${NXT_SPEC_TARGET}
+# the build should be done during the make 
+# mvn package
+mvn dependency:copy-dependencies -DoutputDirectory=target/lib-provided -DincludeScope=provided
+mvn dependency:copy-dependencies -DoutputDirectory=target/lib-runtime -DincludeScope=runtime
+cd -
 
-NXT_JAR_VERSION=$NXT_TOMCAT_VERSION
-
-NXT_JAR_NAME=tomcat-servlet-api
-NXT_JAR_NAMESPACE=org/apache/tomcat/
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=tomcat-el-api
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=tomcat-jsp-api
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=tomcat-jasper
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=tomcat-jasper-el
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=tomcat-juli
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=tomcat-api
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=tomcat-util-scan
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=tomcat-util
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=ecj
-NXT_JAR_VERSION=3.39.0
-NXT_JAR_NAMESPACE=org/eclipse/jdt/
-. auto/modules/java_get_jar
+for NXT_JAR_FILE in $(ls src/java/jsc-${NXT_SPEC_TARGET}/target/lib-provided) ; do
+	$echo "    \"$NXT_JAR_FILE\"," >> $NXT_JAVA_JARS
+done
 
 cat << END >> $NXT_JAVA_JARS
     "$NXT_WS_API_JAR",
@@ -285,27 +264,9 @@ static const char *nxt_java_unit_jars[] = {
     "$NXT_UNIT_JAR",
 END
 
-NXT_JAR_VERSION=12.0.14
-NXT_JAR_NAMESPACE=org/eclipse/jetty/
-
-NXT_JAR_NAME=jetty-util
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=jetty-server
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=jetty-http
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=classgraph
-NXT_JAR_VERSION=4.8.177
-NXT_JAR_NAMESPACE=io/github/classgraph/
-. auto/modules/java_get_jar
-
-NXT_JAR_NAME=slf4j-api
-NXT_JAR_VERSION=2.0.16
-NXT_JAR_NAMESPACE=org/slf4j/
-. auto/modules/java_get_jar
+for NXT_JAR_FILE in $(ls src/java/jsc-${NXT_SPEC_TARGET}/target/lib-runtime) ; do
+	$echo "    \"$NXT_JAR_FILE\"," >> $NXT_JAVA_JARS
+done
 
 cat << END >> $NXT_JAVA_JARS
     NULL

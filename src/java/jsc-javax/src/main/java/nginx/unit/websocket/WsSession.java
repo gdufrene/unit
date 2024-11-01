@@ -56,7 +56,7 @@ import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.InstanceManager;
 import org.apache.tomcat.InstanceManagerBindings;
 import org.apache.tomcat.util.ExceptionUtils;
-// import org.apache.tomcat.util.buf.Utf8Decoder;
+import org.apache.tomcat.util.buf.Utf8Decoder;
 import org.apache.tomcat.util.res.StringManager;
 
 import nginx.unit.Request;
@@ -74,12 +74,9 @@ public class WsSession implements Session {
 
     private final Log log = LogFactory.getLog(WsSession.class); // must not be static
 
-    // TODO: Fix this decoder ?
-    private final CharsetDecoder utf8DecoderMessage = StandardCharsets.UTF_8.newDecoder();
-    /*
+    private final CharsetDecoder utf8DecoderMessage = new Utf8Decoder().
             onMalformedInput(CodingErrorAction.REPORT).
             onUnmappableCharacter(CodingErrorAction.REPORT);
-            */
 
     private final Endpoint localEndpoint;
     private final WsRemoteEndpointImplBase wsRemoteEndpoint;
